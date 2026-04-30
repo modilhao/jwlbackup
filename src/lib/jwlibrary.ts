@@ -1,5 +1,5 @@
 import { unzipSync, zipSync, strFromU8, strToU8 } from 'fflate';
-import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
+import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js/dist/sql-wasm.js';
 import { base } from '$app/paths';
 import type { Manifest } from './types';
 
