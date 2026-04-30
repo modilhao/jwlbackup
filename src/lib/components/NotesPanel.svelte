@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { archiveStore } from '$lib/store.svelte';
-	import { listNotes, getNote, updateNote, deleteNote, getLocationLabel } from '$lib/queries';
+	import { listNotes, getNote, updateNote, deleteNote } from '$lib/queries';
+	import { resolveRef } from '$lib/refs';
+	import { exportNotesToZip, noteToMarkdown } from '$lib/markdown';
+	import { downloadBlob } from '$lib/jwlibrary';
 	import type { Note } from '$lib/types';
+	import type { NoteRef } from '$lib/refs';
 
 	let search = $state('');
 	let selectedId = $state<number | null>(null);
@@ -9,19 +13,32 @@
 	let draftTitle = $state('');
 	let draftContent = $state('');
 	let refresh = $state(0);
+	let exportOpen = $state(false);
+	let folderByYear = $state(false);
 
 	const notes = $derived.by<Note[]>(() => {
 		void refresh;
 		const db = archiveStore.current?.db;
 		if (!db) return [];
-		return listNotes(db, { search: search || undefined, limit: 500 });
+		return listNotes(db, { search: search || undefined, limit: 1000 });
 	});
+
+	function refOf(note: Note): NoteRef {
+		const db = archiveStore.current!.db;
+		return resolveRef(db, note);
+	}
 
 	const selected = $derived.by<Note | null>(() => {
 		void refresh;
 		const db = archiveStore.current?.db;
 		if (!db || selectedId == null) return null;
 		return getNote(db, selectedId);
+	});
+
+	const selectedRef = $derived.by<NoteRef | null>(() => {
+		const db = archiveStore.current?.db;
+		if (!db || !selected) return null;
+		return resolveRef(db, selected);
 	});
 
 	function select(id: number) {
@@ -55,6 +72,24 @@
 		refresh++;
 	}
 
+	function exportSingle() {
+		const db = archiveStore.current?.db;
+		if (!db || !selected) return;
+		const md = noteToMarkdown(db, selected, { folderByYear: false });
+		const blob = new Blob([md.content], { type: 'text/markdown' });
+		downloadBlob(blob, md.filename);
+	}
+
+	function exportFiltered() {
+		const db = archiveStore.current?.db;
+		if (!db || notes.length === 0) return;
+		const blob = exportNotesToZip(db, notes, { folderByYear });
+		const stamp = new Date().toISOString().slice(0, 10);
+		const suffix = search ? `-busca` : `-todas`;
+		downloadBlob(blob, `JWLBackup-Notas${suffix}-${stamp}.zip`);
+		exportOpen = false;
+	}
+
 	function fmt(iso: string): string {
 		try {
 			return new Date(iso).toLocaleString('pt-BR', { dateStyle: 'medium', timeStyle: 'short' });
@@ -65,23 +100,47 @@
 </script>
 
 <div class="flex flex-1 min-h-0">
-	<div class="w-96 shrink-0 border-r border-line flex flex-col">
-		<div class="p-3 border-b border-line">
+	<div class="w-[28rem] shrink-0 border-r border-line flex flex-col">
+		<div class="p-3 border-b border-line space-y-2">
 			<input
 				class="input"
 				type="search"
 				placeholder="Buscar notas…"
 				bind:value={search}
 			/>
+			<div class="flex items-center justify-between text-xs text-ink-muted">
+				<span>{notes.length.toLocaleString('pt-BR')} {notes.length === 1 ? 'nota' : 'notas'}</span>
+				<button class="btn-link" onclick={() => (exportOpen = !exportOpen)}>
+					{exportOpen ? 'Cancelar' : 'Exportar Markdown ↓'}
+				</button>
+			</div>
+			{#if exportOpen}
+				<div class="card p-3 space-y-3 text-sm">
+					<label class="flex items-center gap-2 cursor-pointer">
+						<input type="checkbox" bind:checked={folderByYear} />
+						<span>Organizar em pastas por ano</span>
+					</label>
+					<button class="btn btn-primary w-full" onclick={exportFiltered}>
+						Exportar {notes.length} {notes.length === 1 ? 'nota' : 'notas'} (.zip)
+					</button>
+					<p class="text-xs text-ink-muted">
+						{search
+							? 'Exporta apenas as notas filtradas pela busca.'
+							: 'Exporta todas as notas. Cada nota vira um .md com referência (ex: Apocalipse 21:3-4).'}
+					</p>
+				</div>
+			{/if}
 		</div>
 		<div class="flex-1 overflow-y-auto">
 			{#each notes as note (note.NoteId)}
+				{@const r = refOf(note)}
 				<button
 					class="note-item"
 					class:active={selectedId === note.NoteId}
 					onclick={() => select(note.NoteId)}
 				>
-					<div class="font-medium text-ink truncate">
+					<div class="text-xs font-medium" style:color="var(--color-coral)">{r.display}</div>
+					<div class="font-medium text-ink truncate mt-0.5">
 						{note.Title || '(sem título)'}
 					</div>
 					{#if note.Content}
@@ -98,8 +157,15 @@
 	</div>
 
 	<div class="flex-1 overflow-y-auto">
-		{#if selected}
+		{#if selected && selectedRef}
 			<div class="max-w-3xl mx-auto px-8 py-10">
+				<div class="text-sm font-medium mb-2" style:color="var(--color-coral)">
+					{selectedRef.display}
+					{#if selectedRef.source && selectedRef.source !== 'Bíblia'}
+						<span class="text-ink-muted font-normal">— {selectedRef.source}</span>
+					{/if}
+				</div>
+
 				{#if editing}
 					<input class="input serif text-3xl font-medium mb-6" bind:value={draftTitle} placeholder="Título" />
 					<textarea
@@ -112,10 +178,16 @@
 						<button class="btn btn-ghost" onclick={() => (editing = false)}>Cancelar</button>
 					</div>
 				{:else}
-					<div class="flex items-start gap-4 mb-2">
+					<div class="flex items-start gap-3 mb-2">
 						<h1 class="serif text-3xl font-medium flex-1">
 							{selected.Title || '(sem título)'}
 						</h1>
+						<button class="btn btn-outline" onclick={exportSingle} title="Exportar para Markdown">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+							</svg>
+							<span>.md</span>
+						</button>
 						<button class="btn btn-outline" onclick={startEdit}>Editar</button>
 						<button class="btn btn-ghost" onclick={remove} title="Excluir">
 							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -128,10 +200,6 @@
 						<span>Atualizado {fmt(selected.LastModified)}</span>
 						<span>·</span>
 						<span>Criado {fmt(selected.Created)}</span>
-						{#if selected.LocationId != null && archiveStore.current}
-							<span>·</span>
-							<span>{getLocationLabel(archiveStore.current.db, selected.LocationId)}</span>
-						{/if}
 					</div>
 					<div class="prose prose-stone max-w-none whitespace-pre-wrap leading-relaxed text-ink">
 						{selected.Content || ''}
@@ -166,5 +234,12 @@
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+	.btn-link {
+		color: var(--color-coral);
+		font-weight: 500;
+	}
+	.btn-link:hover {
+		text-decoration: underline;
 	}
 </style>
