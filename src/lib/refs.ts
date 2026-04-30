@@ -42,11 +42,18 @@ function getLocation(db: Database, id: number): LocRow | null {
 	return row;
 }
 
-function getBlockRangeIdentifiers(db: Database, userMarkId: number): number[] {
+/**
+ * Returns BlockRange identifiers for a UserMark, filtered by BlockType.
+ * BlockType=2 → Bible verses; BlockType=1 → publication paragraphs.
+ * Each UserMark may contain rows of *both* types (the JW Library renderer
+ * tracks paragraph offsets even on Bible chapters), so filtering is required
+ * to avoid pulling internal paragraph IDs (e.g. 1763) into a verse list.
+ */
+function getBlockRangeIdentifiers(db: Database, userMarkId: number, blockType: number): number[] {
 	const stmt = db.prepare(
-		'SELECT DISTINCT Identifier FROM BlockRange WHERE UserMarkId = ? ORDER BY Identifier'
+		'SELECT DISTINCT Identifier FROM BlockRange WHERE UserMarkId = ? AND BlockType = ? ORDER BY Identifier'
 	);
-	stmt.bind([userMarkId]);
+	stmt.bind([userMarkId, blockType]);
 	const out: number[] = [];
 	while (stmt.step()) out.push((stmt.getAsObject().Identifier as number) ?? 0);
 	stmt.free();
@@ -92,12 +99,16 @@ export function resolveRef(db: Database, note: Note): NoteRef {
 	if (!loc) return empty;
 
 	const ks = loc.KeySymbol ?? '';
+	const isBible = isBibleKeySymbol(ks) && !!loc.BookNumber && !!loc.ChapterNumber;
+	const targetBlockType = isBible ? 2 : 1;
 
 	let identifiers: number[] = [];
-	if (note.UserMarkId != null) identifiers = getBlockRangeIdentifiers(db, note.UserMarkId);
+	if (note.UserMarkId != null) {
+		identifiers = getBlockRangeIdentifiers(db, note.UserMarkId, targetBlockType);
+	}
 	if (identifiers.length === 0 && note.BlockIdentifier != null) identifiers = [note.BlockIdentifier];
 
-	if (isBibleKeySymbol(ks) && loc.BookNumber && loc.ChapterNumber) {
+	if (isBible) {
 		const book = bibleBookName(loc.BookNumber);
 		const verseText = collapseRanges(identifiers, ',');
 		const display = verseText
