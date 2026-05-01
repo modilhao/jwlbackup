@@ -15,6 +15,7 @@
 	let refresh = $state(0);
 	let exportOpen = $state(false);
 	let folderByYear = $state(false);
+	let shareStatus = $state<'idle' | 'copied' | 'shared'>('idle');
 
 	const notes = $derived.by<Note[]>(() => {
 		void refresh;
@@ -44,6 +45,7 @@
 	function select(id: number) {
 		selectedId = id;
 		editing = false;
+		shareStatus = 'idle';
 	}
 
 	function startEdit() {
@@ -78,6 +80,40 @@
 		const md = noteToMarkdown(db, selected, { folderByYear: false });
 		const blob = new Blob([md.content], { type: 'text/markdown' });
 		downloadBlob(blob, md.filename);
+	}
+
+	function shareText(): string {
+		if (!selected || !selectedRef) return '';
+		const title = selected.Title?.trim() || '(sem título)';
+		return [
+			title,
+			selectedRef.display,
+			'',
+			selected.Content?.trim() || '',
+			'',
+			'Exportado do JWLBackup'
+		]
+			.filter((line, index, lines) => line || lines[index - 1])
+			.join('\n');
+	}
+
+	async function shareSelected() {
+		if (!selected || !selectedRef) return;
+		const title = selected.Title?.trim() || selectedRef.display;
+		const text = shareText();
+
+		try {
+			if (navigator.share) {
+				await navigator.share({ title, text });
+				shareStatus = 'shared';
+			} else {
+				await navigator.clipboard.writeText(text);
+				shareStatus = 'copied';
+			}
+			setTimeout(() => (shareStatus = 'idle'), 2200);
+		} catch {
+			shareStatus = 'idle';
+		}
 	}
 
 	function exportFiltered() {
@@ -182,6 +218,16 @@
 						<h1 class="serif text-3xl font-medium flex-1">
 							{selected.Title || '(sem título)'}
 						</h1>
+						<button class="btn btn-outline" onclick={shareSelected} title="Compartilhar nota">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+								<circle cx="18" cy="5" r="3" />
+								<circle cx="6" cy="12" r="3" />
+								<circle cx="18" cy="19" r="3" />
+								<line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+								<line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+							</svg>
+							<span>{shareStatus === 'copied' ? 'Copiado' : shareStatus === 'shared' ? 'Enviado' : 'Compartilhar'}</span>
+						</button>
 						<button class="btn btn-outline" onclick={exportSingle} title="Exportar para Markdown">
 							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 								<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />

@@ -28,6 +28,12 @@ export interface ObsidianExportResult {
 	summary: ObsidianExportSummary;
 }
 
+export interface ObsidianVaultFiles {
+	files: Record<string, string>;
+	notePaths: string[];
+	summary: ObsidianExportSummary;
+}
+
 interface ObsidianNoteFile {
 	path: string;
 	content: string;
@@ -75,6 +81,19 @@ function isoDate(value: string): string {
 	return date.toISOString();
 }
 
+function contentHash(value: string): string {
+	let hash = 0x811c9dc5;
+	for (let i = 0; i < value.length; i++) {
+		hash ^= value.charCodeAt(i);
+		hash = Math.imul(hash, 0x01000193);
+	}
+	return (hash >>> 0).toString(16).padStart(8, '0');
+}
+
+function controlledBlock(lines: string[]): string[] {
+	return ['<!-- JWL:BEGIN -->', ...lines, '<!-- JWL:END -->'];
+}
+
 function noteTitle(note: Note, ref: NoteRef): string {
 	return note.Title?.trim() || ref.display || 'Sem título';
 }
@@ -105,6 +124,8 @@ function noteToObsidianFile(db: Database, note: Note): ObsidianNoteFile {
 	const colorName = color != null ? HIGHLIGHT_COLORS[color] ?? `cor ${color}` : null;
 	const title = noteTitle(note, ref);
 	const path = notePath(note, ref, title);
+	const importedContent = note.Content?.trim() ?? '';
+	const exportedAt = new Date().toISOString();
 
 	const fm = [
 		`title: ${yamlString(title)}`,
@@ -113,8 +134,11 @@ function noteToObsidianFile(db: Database, note: Note): ObsidianNoteFile {
 		`origem: ${yamlString(ref.source || ref.keySymbol || 'JW Library')}`,
 		`jw_guid: ${yamlString(note.Guid)}`,
 		`jw_note_id: ${note.NoteId}`,
-		`criado: ${yamlString(isoDate(note.Created))}`,
-		`modificado: ${yamlString(isoDate(note.LastModified))}`,
+		`jw_source_created: ${yamlString(isoDate(note.Created))}`,
+		`jw_source_modified: ${yamlString(isoDate(note.LastModified))}`,
+		`jw_exported_at: ${yamlString(exportedAt)}`,
+		`jw_content_hash: ${yamlString(contentHash(importedContent))}`,
+		`sync_strategy: controlled-block`,
 		`tags: ${yamlList(['jw-library', ...mappedTags])}`
 	];
 
@@ -134,19 +158,28 @@ function noteToObsidianFile(db: Database, note: Note): ObsidianNoteFile {
 
 	if (colorName) fm.push(`marcacao: ${yamlString(colorName)}`);
 
-	const body: string[] = [frontmatter(fm), `# ${title}`, '', `> ${ref.display}`];
-	if (ref.source && ref.source !== 'Bíblia') body[body.length - 1] += ` - ${ref.source}`;
-	body.push('');
+	const controlledLines = [`> ${ref.display}`];
+	if (ref.source && ref.source !== 'Bíblia') controlledLines[0] += ` - ${ref.source}`;
 
 	if (ref.kind === 'bible' && ref.verses?.length) {
-		body.push(ref.verses.map((verse) => `[[${bibleBookName(ref.bookNumber)} ${ref.chapter}.${verse}]]`).join(' '));
-		body.push('');
+		controlledLines.push('');
+		controlledLines.push(ref.verses.map((verse) => `[[${bibleBookName(ref.bookNumber)} ${ref.chapter}.${verse}]]`).join(' '));
 	}
 
-	if (note.Content?.trim()) {
-		body.push(note.Content.trim());
-		body.push('');
+	if (importedContent) {
+		controlledLines.push('');
+		controlledLines.push(importedContent);
 	}
+
+	const body: string[] = [
+		frontmatter(fm),
+		`# ${title}`,
+		'',
+		...controlledBlock(controlledLines),
+		'',
+		'## Anotações no Obsidian',
+		''
+	];
 
 	if (tags.length) {
 		body.push('## Etiquetas');
@@ -178,6 +211,7 @@ function createVerseFiles(noteFiles: ObsidianNoteFile[]): Record<string, string>
 		const fm = frontmatter([
 			`title: ${yamlString(title)}`,
 			`tipo: versiculo-biblico`,
+			`jw_exported_at: ${yamlString(new Date().toISOString())}`,
 			`livro: ${yamlString(book)}`,
 			`capitulo: ${item.ref.chapter ?? ''}`,
 			`versiculo: ${item.verse}`,
@@ -261,7 +295,7 @@ function createTemplates(): Record<string, string> {
 	};
 }
 
-export function exportObsidianVault(db: Database, notes: Note[] = listNotes(db, { limit: 100000 })): ObsidianExportResult {
+export function buildObsidianVaultFiles(db: Database, notes: Note[] = listNotes(db, { limit: 100000 })): ObsidianVaultFiles {
 	const noteFiles = notes.map((note) => noteToObsidianFile(db, note));
 	const textFiles: Record<string, string> = {};
 
@@ -284,17 +318,26 @@ export function exportObsidianVault(db: Database, notes: Note[] = listNotes(db, 
 	const tagMocs = Object.keys(textFiles).filter((path) => path.startsWith('JW Library/MOCs/')).length;
 	textFiles['Espiritual.md'] = createHome(noteFiles, verseNotes, tagMocs);
 
-	const files: Record<string, Uint8Array> = {};
-	for (const [path, content] of Object.entries(textFiles)) files[path] = strToU8(content);
-
-	const zipped = zipSync(files, { level: 6 });
 	return {
-		blob: new Blob([zipped.buffer as ArrayBuffer], { type: 'application/zip' }),
+		files: textFiles,
+		notePaths: noteFiles.map((file) => file.path),
 		summary: {
 			notes: noteFiles.length,
 			verseNotes,
 			tagMocs,
-			files: Object.keys(files).length
+			files: Object.keys(textFiles).length
 		}
+	};
+}
+
+export function exportObsidianVault(db: Database, notes: Note[] = listNotes(db, { limit: 100000 })): ObsidianExportResult {
+	const vault = buildObsidianVaultFiles(db, notes);
+	const files: Record<string, Uint8Array> = {};
+	for (const [path, content] of Object.entries(vault.files)) files[path] = strToU8(content);
+
+	const zipped = zipSync(files, { level: 6 });
+	return {
+		blob: new Blob([zipped.buffer as ArrayBuffer], { type: 'application/zip' }),
+		summary: vault.summary
 	};
 }
