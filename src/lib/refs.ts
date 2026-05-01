@@ -123,8 +123,8 @@ export function resolveRef(db: Database, note: Note): NoteRef {
 			short,
 			source: 'Bíblia',
 			keySymbol: ks,
-			bookNumber: loc.BookNumber,
-			chapter: loc.ChapterNumber,
+			bookNumber: loc.BookNumber ?? undefined,
+			chapter: loc.ChapterNumber ?? undefined,
 			verses: identifiers,
 			verseRangeText: verseText
 		};

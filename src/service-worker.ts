@@ -63,9 +63,12 @@ sw.addEventListener('fetch', (event) => {
 			} catch {
 				const hit = await cache.match(req);
 				if (hit) return hit;
-				// Last resort: index page from cache (single-page app).
-				const index = await cache.match('/');
-				if (index) return index;
+
+				if (req.mode === 'navigate') {
+					const index = await cache.match('/');
+					if (index) return index;
+				}
+
 				return new Response('Offline e recurso não cacheado.', { status: 504 });
 			}
 		})()

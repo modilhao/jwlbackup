@@ -5,6 +5,7 @@
 	import NotesPanel from '$lib/components/NotesPanel.svelte';
 	import SimpleListPanel from '$lib/components/SimpleListPanel.svelte';
 	import MaintenancePanel from '$lib/components/MaintenancePanel.svelte';
+	import ObsidianPanel from '$lib/components/ObsidianPanel.svelte';
 	import { archiveStore } from '$lib/store.svelte';
 	import {
 		getCounts,
@@ -16,7 +17,7 @@
 		getLocationLabel
 	} from '$lib/queries';
 
-	type Tab = 'notes' | 'highlights' | 'bookmarks' | 'tags' | 'playlists' | 'locations' | 'media' | 'maintenance';
+	type Tab = 'notes' | 'obsidian' | 'highlights' | 'bookmarks' | 'tags' | 'playlists' | 'locations' | 'media' | 'maintenance';
 
 	let tab = $state<Tab>('notes');
 
@@ -105,6 +106,8 @@
 			<main class="flex-1 flex flex-col min-w-0">
 				{#if tab === 'notes'}
 					<NotesPanel />
+				{:else if tab === 'obsidian'}
+					<ObsidianPanel />
 				{:else if tab === 'bookmarks'}
 					<SimpleListPanel
 						title="Favoritos"

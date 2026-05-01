@@ -2,7 +2,16 @@
 	import type { Counts } from '$lib/types';
 	import Logo from './Logo.svelte';
 
-	type Tab = 'notes' | 'highlights' | 'bookmarks' | 'tags' | 'playlists' | 'locations' | 'media' | 'maintenance';
+	type Tab =
+		| 'notes'
+		| 'obsidian'
+		| 'highlights'
+		| 'bookmarks'
+		| 'tags'
+		| 'playlists'
+		| 'locations'
+		| 'media'
+		| 'maintenance';
 
 	let {
 		current = $bindable<Tab>('notes'),
@@ -11,6 +20,7 @@
 
 	const items: { id: Tab; label: string; count: number; icon: string }[] = $derived([
 		{ id: 'notes', label: 'Notas', count: counts.notes, icon: 'M11 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z' },
+		{ id: 'obsidian', label: 'Obsidian', count: 0, icon: 'M12 2l8 4.5v9L12 22l-8-6.5v-9L12 2zM12 2v20M4 6.5l8 5 8-5M4 15.5l8-4 8 4' },
 		{ id: 'highlights', label: 'Marcações', count: counts.userMarks, icon: 'M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5zM2 2l7.586 7.586M11 11a2 2 0 1 1-4 0 2 2 0 0 1 4 0z' },
 		{ id: 'bookmarks', label: 'Favoritos', count: counts.bookmarks, icon: 'M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z' },
 		{ id: 'tags', label: 'Etiquetas', count: counts.tags, icon: 'M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01' },
