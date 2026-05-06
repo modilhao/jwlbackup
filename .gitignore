@@ -24,3 +24,4 @@ vite.config.ts.timestamp-*
 
 # Local user data — never commit real backups
 *.jwlibrary
+claude/jwlibrary_extract/
