@@ -234,3 +234,42 @@ export function atomicVerseTags(ref: NoteRef): string[] {
 export function mocTags(tag: string): string[] {
 	return ['tipo/moc', `tema/${tagSlug(tag)}`];
 }
+
+// ─────────────────────────── Sync (Phase 1.5) ───────────────────────────
+
+/**
+ * Campos do frontmatter que o sync pode sobrescrever sem perguntar.
+ * Tudo que NÃO está aqui é considerado user-managed e fica preservado.
+ *
+ * Drift consciente: `tags` (hierárquico) é write-once-on-create — primeira
+ * exportação seta, sync nunca atualiza. Mesmo pra `marcacao`, `status`,
+ * `versiculo-base`, `created`, `note-id`, `note-guid`. User pode editar
+ * livremente sem medo de sync sobrescrever.
+ */
+export const SYNC_AUTO_MANAGED_FIELDS = {
+	bibleNote: ['livro', 'capitulo', 'versiculo', 'testamento', 'key-symbol', 'fonte', 'modified', 'tags-jw'],
+	publicationNote: ['publicacao', 'key-symbol', 'issue', 'documento', 'paragrafos', 'fonte', 'modified', 'tags-jw'],
+	atomicVerse: ['livro', 'capitulo', 'versiculo', 'testamento', 'fonte'],
+	moc: ['tag-jw'], // body inteiro NÃO é auto-managed
+	home: [] // nunca tocado
+} as const;
+
+export type SyncTipo = keyof typeof SYNC_AUTO_MANAGED_FIELDS;
+
+/**
+ * Mapeia `tipo:` do FM (e detalhe pra `nota-jw`) pro grupo do
+ * SYNC_AUTO_MANAGED_FIELDS. Pra `nota-jw`, decide pelo campo `publicacao`
+ * (se presente → publicationNote, senão → bibleNote).
+ *
+ * Retorna null pra notas que o sync não gerencia.
+ */
+export function syncTipoFromFm(fmFields: Map<string, string>): SyncTipo | null {
+	const tipo = fmFields.get('tipo');
+	if (tipo === 'atomic-verse') return 'atomicVerse';
+	if (tipo === 'moc') return 'moc';
+	if (tipo === 'home') return 'home';
+	if (tipo === 'nota-jw') {
+		return fmFields.has('publicacao') ? 'publicationNote' : 'bibleNote';
+	}
+	return null;
+}

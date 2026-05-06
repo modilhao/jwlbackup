@@ -80,7 +80,7 @@
 			</div>
 			<div class="card p-4">
 				<div class="text-sm text-ink-muted">Controle</div>
-				<div class="text-2xl font-medium mt-1">jw_guid</div>
+				<div class="text-2xl font-medium mt-1">note-guid</div>
 			</div>
 		</div>
 
@@ -88,10 +88,9 @@
 			<div>
 				<h2 class="font-medium text-lg">Exportar como ZIP</h2>
 				<ul class="mt-3 space-y-2 text-sm text-ink-soft">
-					<li><code>JW Library/Notas/</code> com frontmatter YAML para Dataview.</li>
-					<li><code>JWL:BEGIN</code> e <code>JWL:END</code> delimitam a área controlada pela fonte.</li>
-					<li><code>jw_guid</code>, <code>jw_source_modified</code> e <code>jw_content_hash</code> identificam cada nota.</li>
-					<li><code>Bíblia/</code>, <code>JW Library/MOCs/</code>, <code>Templates/</code> e <code>Espiritual.md</code> acompanham o pacote.</li>
+					<li><code>JW Library/Notas/Bíblia/</code> e <code>Publicações/</code> com frontmatter YAML pra Dataview.</li>
+					<li><code>note-guid</code> e <code>note-id</code> identificam cada nota; <code>tags</code> hierárquicas por tipo, livro, fonte e tema.</li>
+					<li><code>Bíblia/</code> com versículos atômicos, <code>_MOCs/</code> por etiqueta JW e <code>Espiritual.md</code> de home.</li>
 				</ul>
 			</div>
 
@@ -111,9 +110,12 @@
 			<div>
 				<h2 class="font-medium text-lg">Atualizar vault existente</h2>
 				<p class="mt-2 text-sm text-ink-muted leading-relaxed">
-					Lê a pasta escolhida, encontra notas por <code>jw_guid</code> e atualiza somente o bloco
-					controlado. Texto fora de <code>JWL:BEGIN</code>/<code>JWL:END</code> é preservado. Se uma
-					nota antiga não tiver marcadores, o app cria um arquivo em <code>JW Library/Conflitos</code>.
+					Encontra notas existentes por <code>note-guid</code> e atualiza apenas o frontmatter
+					canônico do JW Library (livro, capítulo, versículo, modified, tags-jw). Seu corpo,
+					<code>tags</code> hierárquicas e campos custom (<code>pessoa/</code>,
+					<code>colecao/</code>) ficam intactos. Notas legadas (com <code>jw_guid</code> V1) são
+					listadas no relatório sem serem alteradas. <code>Espiritual.md</code> nunca é tocado pelo
+					sync — regenere via ZIP se quiser atualizar.
 				</p>
 			</div>
 
@@ -121,16 +123,12 @@
 
 			<div class="flex items-center justify-between gap-4">
 				<p class="text-sm text-ink-muted">
-					A atualização incremental de pasta está em manutenção enquanto migramos o schema. Use
-					'Baixar ZIP' por enquanto.
+					{canSyncDirectory
+						? 'Escolha a raiz do vault Obsidian para aplicar a sincronização segura.'
+						: 'Seu navegador atual não expõe seleção de pasta. Use o ZIP neste ambiente.'}
 				</p>
-				<button
-					class="btn btn-outline shrink-0"
-					onclick={syncVault}
-					disabled={true}
-					title="Em manutenção. Atualização será reativada na Fase 1.5 com novo schema (note-guid)."
-				>
-					Em manutenção (Fase 1.5)
+				<button class="btn btn-outline shrink-0" onclick={syncVault} disabled={syncing || !canSyncDirectory}>
+					{syncing ? 'Atualizando…' : 'Atualizar pasta'}
 				</button>
 			</div>
 		</div>
@@ -144,7 +142,7 @@
 		{#if syncSummary}
 			<div class="card p-5">
 				<h2 class="font-medium text-lg">Última sincronização</h2>
-				<div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 text-sm">
+				<div class="grid grid-cols-2 md:grid-cols-6 gap-3 mt-4 text-sm">
 					<div>
 						<div class="text-ink-muted">Criadas</div>
 						<div class="text-xl font-medium">{syncSummary.created.toLocaleString('pt-BR')}</div>
@@ -160,6 +158,10 @@
 					<div>
 						<div class="text-ink-muted">Conflitos</div>
 						<div class="text-xl font-medium">{syncSummary.conflicts.toLocaleString('pt-BR')}</div>
+					</div>
+					<div>
+						<div class="text-ink-muted">Legado V1</div>
+						<div class="text-xl font-medium">{syncSummary.legacySkipped.toLocaleString('pt-BR')}</div>
 					</div>
 					<div>
 						<div class="text-ink-muted">Apoio</div>
