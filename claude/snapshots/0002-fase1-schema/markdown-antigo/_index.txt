@@ -2,8 +2,8 @@ Total de notas: 3215
 
 Sample bíblica:
   NoteId=528
-  Path=Notas/Salmos 119.97,98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meu.md
-  Ref=Salmos 119:97,98
+  Path=Notas/Salmos 119.97-98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meu.md
+  Ref=Salmos 119:97-98
 
 Sample publicação:
   NoteId=3306

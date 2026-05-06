@@ -1,26 +1,26 @@
-<!-- snapshot path: JW Library/Notas/Bíblia/Salmos/Salmos 119.97,98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meu.md -->
+<!-- snapshot path: JW Library/Notas/Bíblia/Salmos/Salmos 119.97-98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meu.md -->
 ---
 tipo: nota-jw
 fonte: jw-library
 livro: Salmos
 capitulo: 119
-versiculo: 97,98
+versiculo: 97-98
 testamento: AT
 key-symbol: nwtsty
 created: 2021-08-14T22:49:56.000Z
 modified: 2026-04-15T16:47:29.000Z
 note-id: 528
 note-guid: E83AB7A3-992F-4437-9FC1-3E48BD3D84CA
-versiculo-base: "[[Salmos 119.97,98]]"
+versiculo-base: "[[Salmos 119.97-98]]"
 tags-jw: ["Reflexões", "Ser cristão", Entendimentos]
 tags: [tipo/nota-jw, livro/at/salmos, fonte/biblia, tema/reflexoes, tema/ser-cristao, tema/entendimentos]
 marcacao: amarelo
 ---
-# Salmos 119:97,98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meus inimigos, Porque ele está comigo para sempre.
+# Salmos 119:97-98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meus inimigos, Porque ele está comigo para sempre.
 
 ## Trecho destacado (TNM)
 
-[[Salmos 119.97,98]]
+[[Salmos 119.97-98]]
 
 ## Reflexão pessoal
 

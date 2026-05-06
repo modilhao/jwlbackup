@@ -17,6 +17,7 @@ import {
 	notePath,
 	refHeader,
 	testamento,
+	versiculoBaseLink,
 	yamlList,
 	yamlString
 } from './schema';
@@ -86,7 +87,7 @@ function buildBibleFrontmatter(
 	fm.push(`note-id: ${note.NoteId}`);
 	fm.push(`note-guid: ${yamlString(note.Guid)}`);
 	if (ref.verseRangeText && book && ref.chapter != null) {
-		fm.push(`versiculo-base: ${yamlString(`[[${book} ${ref.chapter}.${ref.verseRangeText}]]`)}`);
+		fm.push(`versiculo-base: ${yamlString(versiculoBaseLink(ref))}`);
 	}
 	if (rawTags.length) fm.push(`tags-jw: ${yamlList(rawTags)}`);
 	fm.push(`tags: ${yamlList(hierarchicalTags({ ref, rawTags }))}`);

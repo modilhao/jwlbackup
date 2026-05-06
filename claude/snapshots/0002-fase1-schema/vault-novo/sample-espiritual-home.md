@@ -14,7 +14,7 @@ tags: [tipo/home]
 
 ## Notas recentes
 
-- [[JW Library/Notas/Bíblia/Salmos/Salmos 119.97,98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meu|Salmos 119:97,98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meus inimigos, Porque ele está comigo para sempre.]]
+- [[JW Library/Notas/Bíblia/Salmos/Salmos 119.97-98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meu|Salmos 119:97-98 — Como eu amo a tua lei! Medito nela o dia inteiro. 98 Teu mandamento me torna mais sábio do que os meus inimigos, Porque ele está comigo para sempre.]]
 - [[JW Library/Notas/Bíblia/2 João/2 João 1.8 — Tenham cuidado para que vocês não percam as coisas que trabalhamos para produzir; em vez disso, que possam|2 João 1:8 — Tenham cuidado para que vocês não percam as coisas que trabalhamos para produzir; em vez disso, que possam obter uma plena recompensa]]
 - [[JW Library/Notas/Bíblia/Salmos/Salmos 86.12 — Eu te louvo de todo o coração, ó Jeová, meu Deus; Glorificarei o teu nome para sempre|Salmos 86:12 — Eu te louvo de todo o coração, ó Jeová, meu Deus; Glorificarei o teu nome para sempre]]
 - [[JW Library/Notas/Bíblia/Apocalipse/Apocalipse 12.9 — Assim, foi lançado para baixo o grande dragão, a serpente original, o chamado Diabo e Satanás, que est|Apocalipse 12:9 — Assim, foi lançado para baixo o grande dragão, a serpente original, o chamado Diabo e Satanás, que está enganando toda a terra habitada. Ele foi lançado para baixo, à terra, e os seus anjos foram lançados para baixo junto com ele]]

@@ -139,6 +139,19 @@ export function atomicVerseLink(ref: NoteRef): string {
 	return vers ? `${book} ${chapter}.${vers}` : `${book} ${chapter}`;
 }
 
+/**
+ * Wikilink pro campo `versiculo-base` do frontmatter — forma `[[Livro Cap.range]]`.
+ *
+ * versiculo-base aponta pro range agregado (ex: `[[Salmos 119.97-98]]`).
+ * Atomic verses são gerados por verso individual, então esse link
+ * fica unresolved no Obsidian — clique cria stub que serve de nota-síntese
+ * do range. Padrão herdado da AMOSTRA (Isaías 56.4-5). Decisão registrada
+ * em claude/ESTUDO §4 e no commit ffbe672 da Fase 1.
+ */
+export function versiculoBaseLink(ref: NoteRef): string {
+	return `[[${atomicVerseLink(ref)}]]`;
+}
+
 /** Path de MOC: `_MOCs/MOC - <Tema>.md`. */
 export function mocPath(tag: string): string {
 	return `_MOCs/${safeFilename(`MOC - ${tag}`)}.md`;

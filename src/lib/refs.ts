@@ -62,8 +62,9 @@ function getBlockRangeIdentifiers(db: Database, userMarkId: number, blockType: n
 
 /**
  * Collapse a sorted, deduplicated list of integers into compact range text.
- * [3,4,5] → "3-5", [3,5,6,9] → "3,5,6,9", [1,2,4,5,7] → "1,2,4,5,7"
- * Adjacent runs of length ≥3 collapse to "a-b"; pairs stay as "a,b".
+ * [3,4,5] → "3-5", [4,5] → "4-5", [3,5,6,9] → "3,5-6,9", [1,2,4,5,7] → "1-2,4-5,7"
+ * Adjacent runs of length ≥2 collapse to "a-b"; isolates stay as "a".
+ * Aligned with AMOSTRA (Isaías 56.4-5).
  */
 export function collapseRanges(nums: number[], sep = ','): string {
 	if (nums.length === 0) return '';
@@ -74,7 +75,7 @@ export function collapseRanges(nums: number[], sep = ','): string {
 		let j = i;
 		while (j + 1 < sorted.length && sorted[j + 1] === sorted[j] + 1) j++;
 		const runLen = j - i + 1;
-		if (runLen >= 3) parts.push(`${sorted[i]}-${sorted[j]}`);
+		if (runLen >= 2) parts.push(`${sorted[i]}-${sorted[j]}`);
 		else for (let k = i; k <= j; k++) parts.push(String(sorted[k]));
 		i = j + 1;
 	}

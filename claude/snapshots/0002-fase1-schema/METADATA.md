@@ -1,6 +1,6 @@
 # Snapshot 0001 — baseline pré-Fase 1
 
-Gerado em: 2026-05-06T17:28:14.872Z
+Gerado em: 2026-05-06T17:43:20.776Z
 Source DB: `claude/jwlibrary_extract/userData.db`
 
 ## Sumário do vault novo (`obsidian/exporter.ts`)
@@ -19,7 +19,7 @@ Source DB: `claude/jwlibrary_extract/userData.db`
 
 | Tipo | NoteId | Referência | Critério |
 |---|---|---|---|
-| Bíblica | 528 | Salmos 119:97,98 | Primeira (LastModified DESC) com BlockType=2 e KeySymbol bíblico |
+| Bíblica | 528 | Salmos 119:97-98 | Primeira (LastModified DESC) com BlockType=2 e KeySymbol bíblico |
 | Publicação | 3306 | w.26.02 doc 2026281 par. 31 | Primeira (LastModified DESC) com KeySymbol não-bíblico |
 
 ## Como recomparar após uma Fase

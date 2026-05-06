@@ -9,7 +9,7 @@ tags: [tipo/moc, tema/casamento]
 
 Total de notas: 11
 
-- [[JW Library/Notas/Bíblia/Provérbios/Provérbios 2.10,11 — Quando a sabedoria entrar no seu coração E o conhecimento se tornar agradável para a sua alma, 11 O (2)|Provérbios 2:10,11 — Quando a sabedoria entrar no seu coração E o conhecimento se tornar agradável para a sua alma, 11 O raciocínio o guardará E o discernimento o protegerá]]
+- [[JW Library/Notas/Bíblia/Provérbios/Provérbios 2.10-11 — Quando a sabedoria entrar no seu coração E o conhecimento se tornar agradável para a sua alma, 11 O (2)|Provérbios 2:10-11 — Quando a sabedoria entrar no seu coração E o conhecimento se tornar agradável para a sua alma, 11 O raciocínio o guardará E o discernimento o protegerá]]
 - [[JW Library/Notas/Bíblia/Provérbios/Provérbios 12.4 — A esposa capaz é uma coroa para o seu marido,|Provérbios 12:4 — A esposa capaz é uma coroa para o seu marido,]]
 - [[JW Library/Notas/Bíblia/1 Pedro/1 Pedro 3.7 — Da mesma maneira, você, marido, continue a morar com a sua esposa segundo o conhecimento. Dê-lhe honra com|1 Pedro 3:7 — Da mesma maneira, você, marido, continue a morar com a sua esposa segundo o conhecimento. Dê-lhe honra como a um vaso mais frágil, o feminino, visto que ela também é herdeira com você do favor imerecido da vida, a fim de que as suas orações não sejam impedidas.]]
 - [[JW Library/Notas/Bíblia/Provérbios/Provérbios 6.27 — Será que um homem pode juntar brasas no seu peito sem queimar a roupa|Provérbios 6:27 — Será que um homem pode juntar brasas no seu peito sem queimar a roupa?]]
