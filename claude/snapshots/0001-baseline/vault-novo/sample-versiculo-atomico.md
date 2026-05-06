@@ -2,7 +2,7 @@
 ---
 title: "1 Coríntios 10:12"
 tipo: versiculo-biblico
-jw_exported_at: 2026-05-06T11:48:40.677Z
+jw_exported_at: 2026-05-06T17:27:32.313Z
 livro: "1 Coríntios"
 capitulo: 10
 versiculo: 12

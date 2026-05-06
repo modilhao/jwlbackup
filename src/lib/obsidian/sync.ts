@@ -154,6 +154,16 @@ function reportContent(summary: ObsidianSyncSummary): string {
 }
 
 export async function syncObsidianVault(root: FileSystemDirectoryHandle, vault: ObsidianVaultFiles): Promise<ObsidianSyncSummary> {
+	// Phase 1.5 TODO: rewrite sync for new schema (note-guid, no JWL:BEGIN/END).
+	// Until then, fail fast against vaults already migrated to V2 to avoid silent corruption.
+	const firstNote = vault.notePaths[0];
+	const sample = firstNote ? vault.files[firstNote] : '';
+	if (sample && sample.includes('note-guid:') && !sample.includes('<!-- JWL:BEGIN -->')) {
+		throw new Error(
+			'sync.ts ainda usa schema antigo (jw_guid + JWL:BEGIN/END), incompatível com o exporter da Fase 1. Use "Baixar ZIP Obsidian" enquanto a Fase 1.5 não chega.'
+		);
+	}
+
 	const existing = await collectMarkdown(root);
 	const byGuid = new Map<string, ExistingNote>();
 	for (const file of existing) {

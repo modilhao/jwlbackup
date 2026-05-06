@@ -121,12 +121,16 @@
 
 			<div class="flex items-center justify-between gap-4">
 				<p class="text-sm text-ink-muted">
-					{canSyncDirectory
-						? 'Escolha a raiz do vault Obsidian para aplicar a sincronização segura.'
-						: 'Seu navegador atual não expõe seleção de pasta. Use o ZIP neste ambiente.'}
+					A atualização incremental de pasta está em manutenção enquanto migramos o schema. Use
+					'Baixar ZIP' por enquanto.
 				</p>
-				<button class="btn btn-outline shrink-0" onclick={syncVault} disabled={syncing || !canSyncDirectory}>
-					{syncing ? 'Atualizando…' : 'Atualizar pasta'}
+				<button
+					class="btn btn-outline shrink-0"
+					onclick={syncVault}
+					disabled={true}
+					title="Em manutenção. Atualização será reativada na Fase 1.5 com novo schema (note-guid)."
+				>
+					Em manutenção (Fase 1.5)
 				</button>
 			</div>
 		</div>

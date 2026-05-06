@@ -1018,7 +1018,6 @@ Bíblia/2 Samuel/2 Samuel 9.4.md
 Bíblia/2 Samuel/2 Samuel 9.7.md
 Bíblia/2 Samuel/2 Samuel 9.8.md
 Bíblia/2 Samuel/2 Samuel 9.9.md
-Bíblia/2 Tessalonicenses/2 Tessalonicenses 2.3.md
 Bíblia/2 Timóteo/2 Timóteo 1.13.md
 Bíblia/2 Timóteo/2 Timóteo 1.16.md
 Bíblia/2 Timóteo/2 Timóteo 1.7.md
@@ -1803,7 +1802,6 @@ Bíblia/Isaías/Isaías 51.7.md
 Bíblia/Isaías/Isaías 52.10.md
 Bíblia/Isaías/Isaías 52.13.md
 Bíblia/Isaías/Isaías 52.2.md
-Bíblia/Isaías/Isaías 52.5.md
 Bíblia/Isaías/Isaías 52.6.md
 Bíblia/Isaías/Isaías 52.7.md
 Bíblia/Isaías/Isaías 53.1.md
@@ -1814,18 +1812,7 @@ Bíblia/Isaías/Isaías 55.11.md
 Bíblia/Isaías/Isaías 55.2.md
 Bíblia/Isaías/Isaías 55.7.md
 Bíblia/Isaías/Isaías 55.8.md
-Bíblia/Isaías/Isaías 56.1.md
-Bíblia/Isaías/Isaías 56.10.md
-Bíblia/Isaías/Isaías 56.11.md
-Bíblia/Isaías/Isaías 56.12.md
-Bíblia/Isaías/Isaías 56.2.md
-Bíblia/Isaías/Isaías 56.4.md
-Bíblia/Isaías/Isaías 56.5.md
-Bíblia/Isaías/Isaías 57.1.md
-Bíblia/Isaías/Isaías 57.11.md
 Bíblia/Isaías/Isaías 57.15.md
-Bíblia/Isaías/Isaías 57.17.md
-Bíblia/Isaías/Isaías 57.2.md
 Bíblia/Isaías/Isaías 6.1.md
 Bíblia/Isaías/Isaías 6.10.md
 Bíblia/Isaías/Isaías 6.12.md
@@ -6028,7 +6015,6 @@ JW Library/Notas/Bíblia/2026/1 Timóteo 5.20 - Repreenda perante todos os obser
 JW Library/Notas/Bíblia/2026/2 João 1.11 - Pois quem o cumprimenta participa das suas obras más.md
 JW Library/Notas/Bíblia/2026/2 João 1.8 - Tenham cuidado para que vocês não percam as coisas que trabalhamos para produzir; em vez disso, que possam.md
 JW Library/Notas/Bíblia/2026/2 Pedro 3.9 - Jeová não é vagaroso com relação a sua promessa, como alguns pensam, mas ele é paciente com vocês, porque.md
-JW Library/Notas/Bíblia/2026/2 Tessalonicenses 2.3 - Que ninguém os desencaminhe, de maneira alguma, porque esse dia não virá sem que venha primeiro.md
 JW Library/Notas/Bíblia/2026/2 Timóteo 1.13 - Apegue-se ao padrão de palavras sadias que você ouviu de mim, com a fé e o amor que resultam da união c.md
 JW Library/Notas/Bíblia/2026/2 Timóteo 2.2 - e as coisas que você ouviu de mim e que foram confirmadas por muitas testemunhas, essas coisas confie a.md
 JW Library/Notas/Bíblia/2026/Atos 1.3 - Depois de ter sofrido, mostrou a eles, por meio de muitas provas convincentes, que estava vivo. Foi visto por.md
@@ -6106,14 +6092,8 @@ JW Library/Notas/Bíblia/2026/Isaías 51.7 - Escutem-me, vocês que conhecem a j
 JW Library/Notas/Bíblia/2026/Isaías 52.10 - Jeová desnudou seu santo braço diante dos olhos de todas as nações; Todos os confins da terra verão os at.md
 JW Library/Notas/Bíblia/2026/Isaías 52.13 - Vejam, meu servo agirá com perspicácia. Ele será enaltecido, Será elevado e grandemente exaltado..md
 JW Library/Notas/Bíblia/2026/Isaías 52.2 - Tire as correntes do pescoço, ó cativa filha de Sião.md
-JW Library/Notas/Bíblia/2026/Isaías 52.5,6 - Por essa razão meu povo conhecerá o meu nome; Por essa razão eles saberão naquele dia que sou eu quem es.md
+JW Library/Notas/Bíblia/2026/Isaías 52.6 - Por essa razão meu povo conhecerá o meu nome; Por essa razão eles saberão naquele dia que sou eu quem está.md
 JW Library/Notas/Bíblia/2026/Isaías 53.1 - Quem depositou fé no que falamos E a quem foi revelado o braço de Jeová.md
-JW Library/Notas/Bíblia/2026/Isaías 56.1,2 - Assim diz Jeová “Pratiquem a justiça e façam o que é certo, Pois a minha salvação logo chegará E a minha.md
-JW Library/Notas/Bíblia/2026/Isaías 56.10-12 - vigias são cegos, não percebem nada. Todos eles são cães mudos, incapazes de latir. Estão ofegantes, d.md
-JW Library/Notas/Bíblia/2026/Isaías 56.4,5 - diz Jeová aos eunucos que guardam os meus sábados, que escolhem fazer o que me agrada e que se apegam ao.md
-JW Library/Notas/Bíblia/2026/Isaías 57.1,2 - O justo morre, Mas ninguém se importa com isso. Os homens leais estão perecendo; Mas ninguém discerne qu.md
-JW Library/Notas/Bíblia/2026/Isaías 57.11 - De quem você teve medo e pavor, De modo que começou a mentir Você não se lembrou de mim, Não fez caso. Nã.md
-JW Library/Notas/Bíblia/2026/Isaías 57.17 - Fiquei indignado com o seu pecado, sua busca por lucro desonesto.md
 JW Library/Notas/Bíblia/2026/Isaías 65.18 - Portanto, alegrem-se e exultem para sempre no que estou criando. Pois vejam! Crio Jerusalém como motivo d.md
 JW Library/Notas/Bíblia/2026/João 14.21 - Quem aceita os meus mandamentos e obedece a eles é o que me ama. Por sua vez, quem me ama será amado pelo m.md
 JW Library/Notas/Bíblia/2026/João 15.12 - Este é o meu mandamento Amem uns aos outros, assim como eu amei vocês.md
@@ -6885,12 +6865,11 @@ JW Library/Notas/Publicações/2026/w.26.01 doc 2026242 par. 19 - nossas palavra
 JW Library/Notas/Publicações/2026/w.26.01 doc 2026242 par. 4 - Jeová, [o] Deus da verdade.md
 JW Library/Notas/Publicações/2026/w.26.02 doc 2026281 par. 18 - mostre por ações que você é uma pessoa equilibrada e feliz, e deixe que eles tirem suas pr.md
 JW Library/Notas/Publicações/2026/w.26.02 doc 2026281 par. 31 - escreveu uma carta aos cristãos que contém muitas lições parecidas com as que Jesus ensino.md
-JW Library/Notas/Publicações/2026/w.26.02 doc 2026282 par. 16 - declarar publicamente.md
 JW Library/Notas/Sem referência/2022/sem-referencia - (sem referência).md
 Templates/JW Library - Nota pessoal.md
 
 ---
-Total: 6890 arquivos
-Notas: 3223
-Versículos atômicos: 3637
+Total: 6869 arquivos
+Notas: 3215
+Versículos atômicos: 3624
 MOCs: 28

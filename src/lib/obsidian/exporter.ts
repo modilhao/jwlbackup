@@ -1,10 +1,27 @@
 import { zipSync, strToU8 } from 'fflate';
 import type { Database } from 'sql.js';
 import type { Note } from '$lib/types';
-import { bibleBookName } from '$lib/bible';
 import { listNotes } from '$lib/queries';
 import { getColorIndex, getNoteTags, resolveRef, type NoteRef } from '$lib/refs';
-import { safeFilename } from '$lib/markdown';
+import {
+	atomicVerseLink,
+	atomicVerseTags,
+	atomicVersePath,
+	frontmatter,
+	hierarchicalTags,
+	isoDate,
+	issueYYYYMM,
+	mocLink,
+	mocPath,
+	mocTags,
+	notePath,
+	refHeader,
+	testamento,
+	yamlList,
+	yamlString
+} from './schema';
+import { bibleBookName } from '$lib/bible';
+import { PUB_META } from '$lib/publications';
 
 const HIGHLIGHT_COLORS = [
 	'sem cor',
@@ -43,162 +60,167 @@ interface ObsidianNoteFile {
 	note: Note;
 }
 
-function yamlString(value: string): string {
-	if (
-		/^[\w\s\-./:,()'"]+$/.test(value) &&
-		!value.includes('\n') &&
-		!value.startsWith(' ') &&
-		!value.endsWith(' ')
-	) {
-		return value;
+function noteUserTitle(note: Note): string {
+	return note.Title?.trim() || '';
+}
+
+function buildBibleFrontmatter(
+	note: Note,
+	ref: NoteRef,
+	rawTags: string[],
+	colorName: string | null
+): string[] {
+	const fm: string[] = [
+		'tipo: nota-jw',
+		'fonte: jw-library'
+	];
+	const book = bibleBookName(ref.bookNumber);
+	if (book) fm.push(`livro: ${yamlString(book)}`);
+	if (ref.chapter != null) fm.push(`capitulo: ${ref.chapter}`);
+	if (ref.verseRangeText) fm.push(`versiculo: ${yamlString(ref.verseRangeText)}`);
+	const test = testamento(ref.bookNumber);
+	if (test) fm.push(`testamento: ${test}`);
+	if (ref.keySymbol) fm.push(`key-symbol: ${yamlString(ref.keySymbol)}`);
+	fm.push(`created: ${yamlString(isoDate(note.Created))}`);
+	fm.push(`modified: ${yamlString(isoDate(note.LastModified))}`);
+	fm.push(`note-id: ${note.NoteId}`);
+	fm.push(`note-guid: ${yamlString(note.Guid)}`);
+	if (ref.verseRangeText && book && ref.chapter != null) {
+		fm.push(`versiculo-base: ${yamlString(`[[${book} ${ref.chapter}.${ref.verseRangeText}]]`)}`);
 	}
-	return JSON.stringify(value);
+	if (rawTags.length) fm.push(`tags-jw: ${yamlList(rawTags)}`);
+	fm.push(`tags: ${yamlList(hierarchicalTags({ ref, rawTags }))}`);
+	if (colorName) fm.push(`marcacao: ${yamlString(colorName)}`);
+	return fm;
 }
 
-function yamlList(values: string[]): string {
-	return `[${values.map((value) => yamlString(value)).join(', ')}]`;
+function buildPublicationFrontmatter(
+	note: Note,
+	ref: NoteRef,
+	rawTags: string[],
+	colorName: string | null
+): string[] {
+	const fm: string[] = ['tipo: nota-jw', 'fonte: jw-library'];
+	const pubName = PUB_META[ref.keySymbol]?.name ?? ref.keySymbol;
+	if (pubName) fm.push(`publicacao: ${yamlString(pubName)}`);
+	if (ref.keySymbol) fm.push(`key-symbol: ${yamlString(ref.keySymbol)}`);
+	const issue = issueYYYYMM(ref.issue);
+	if (issue) fm.push(`issue: ${issue}`);
+	if (ref.documentId) fm.push(`documento: ${ref.documentId}`);
+	if (ref.paragraphRangeText) fm.push(`paragrafos: ${yamlString(ref.paragraphRangeText)}`);
+	fm.push(`created: ${yamlString(isoDate(note.Created))}`);
+	fm.push(`modified: ${yamlString(isoDate(note.LastModified))}`);
+	fm.push(`note-id: ${note.NoteId}`);
+	fm.push(`note-guid: ${yamlString(note.Guid)}`);
+	if (rawTags.length) fm.push(`tags-jw: ${yamlList(rawTags)}`);
+	fm.push(`tags: ${yamlList(hierarchicalTags({ ref, rawTags }))}`);
+	if (colorName) fm.push(`marcacao: ${yamlString(colorName)}`);
+	return fm;
 }
 
-function obsidianTag(value: string): string {
-	return value
-		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.toLowerCase()
-		.replace(/[^a-z0-9/]+/g, '-')
-		.replace(/^-+|-+$/g, '')
-		.replace(/\/+/g, '/');
+function buildUnknownFrontmatter(note: Note, ref: NoteRef, rawTags: string[]): string[] {
+	const fm: string[] = ['tipo: nota-jw', 'fonte: jw-library'];
+	fm.push(`created: ${yamlString(isoDate(note.Created))}`);
+	fm.push(`modified: ${yamlString(isoDate(note.LastModified))}`);
+	fm.push(`note-id: ${note.NoteId}`);
+	fm.push(`note-guid: ${yamlString(note.Guid)}`);
+	if (rawTags.length) fm.push(`tags-jw: ${yamlList(rawTags)}`);
+	fm.push(`tags: ${yamlList(hierarchicalTags({ ref, rawTags }))}`);
+	return fm;
 }
 
-function personalTag(value: string): string {
-	const tag = obsidianTag(value);
-	return tag ? `tema/${tag}` : 'tema/sem-etiqueta';
-}
-
-function isoDate(value: string): string {
-	if (!value) return '';
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return value;
-	return date.toISOString();
-}
-
-function contentHash(value: string): string {
-	let hash = 0x811c9dc5;
-	for (let i = 0; i < value.length; i++) {
-		hash ^= value.charCodeAt(i);
-		hash = Math.imul(hash, 0x01000193);
+function connectionsLines(rawTags: string[]): string[] {
+	if (!rawTags.length) return [];
+	const out: string[] = ['## Conexões', ''];
+	for (const tag of rawTags) {
+		out.push(`- [[${mocLink(tag)}|${tag}]]`);
 	}
-	return (hash >>> 0).toString(16).padStart(8, '0');
+	out.push('');
+	return out;
 }
 
-function controlledBlock(lines: string[]): string[] {
-	return ['<!-- JWL:BEGIN -->', ...lines, '<!-- JWL:END -->'];
+function bibleBody(note: Note, ref: NoteRef, title: string, rawTags: string[]): string {
+	const header = refHeader(ref);
+	const h1 = title ? `${header} — ${title}` : header;
+	const lines: string[] = [`# ${h1}`, ''];
+
+	if (ref.verses?.length && ref.bookNumber != null && ref.chapter != null) {
+		lines.push('## Trecho destacado (TNM)', '', `[[${atomicVerseLink(ref)}]]`, '');
+	}
+
+	const content = note.Content?.trim();
+	if (content) {
+		lines.push('## Reflexão pessoal', '', content, '');
+	}
+
+	lines.push(...connectionsLines(rawTags));
+
+	lines.push('## Aparece em', '', '*(Dataview vai listar aqui automaticamente.)*', '');
+	return lines.join('\n');
 }
 
-function noteTitle(note: Note, ref: NoteRef): string {
-	return note.Title?.trim() || ref.display || 'Sem título';
+function publicationBody(note: Note, ref: NoteRef, title: string, rawTags: string[]): string {
+	const header = refHeader(ref);
+	const h1 = title ? `${header} — ${title}` : header;
+	const lines: string[] = [`# ${h1}`, ''];
+
+	const content = note.Content?.trim();
+	if (content) {
+		lines.push('## Anotação', '', content, '');
+	}
+
+	lines.push(...connectionsLines(rawTags));
+
+	lines.push('## Aparece em', '', '*(Dataview vai listar aqui automaticamente.)*', '');
+	return lines.join('\n');
 }
 
-function notePath(note: Note, ref: NoteRef, title: string): string {
-	const year = note.Created?.slice(0, 4) || 'sem-data';
-	const sourceFolder = ref.kind === 'bible' ? 'Bíblia' : ref.kind === 'publication' ? 'Publicações' : 'Sem referência';
-	const filename = safeFilename(`${ref.short} - ${title}`);
-	return `JW Library/Notas/${sourceFolder}/${year}/${filename}.md`;
-}
-
-function versePath(ref: NoteRef, verse: number): string {
-	const book = bibleBookName(ref.bookNumber) || 'Livro desconhecido';
-	const chapter = ref.chapter ?? 0;
-	const filename = safeFilename(`${book} ${chapter}.${verse}`);
-	return `Bíblia/${safeFilename(book)}/${filename}.md`;
-}
-
-function frontmatter(lines: string[]): string {
-	return ['---', ...lines, '---', ''].join('\n');
+function unknownBody(note: Note, title: string): string {
+	const h1 = title || '(sem título)';
+	const lines: string[] = [`# ${h1}`, ''];
+	const content = note.Content?.trim();
+	if (content) {
+		lines.push(content, '');
+	}
+	return lines.join('\n');
 }
 
 function noteToObsidianFile(db: Database, note: Note): ObsidianNoteFile {
 	const ref = resolveRef(db, note);
-	const tags = getNoteTags(db, note.NoteId);
-	const mappedTags = tags.map(personalTag);
+	const rawTags = getNoteTags(db, note.NoteId);
 	const color = getColorIndex(db, note.UserMarkId);
 	const colorName = color != null ? HIGHLIGHT_COLORS[color] ?? `cor ${color}` : null;
-	const title = noteTitle(note, ref);
-	const path = notePath(note, ref, title);
-	const importedContent = note.Content?.trim() ?? '';
-	const exportedAt = new Date().toISOString();
+	const title = noteUserTitle(note);
+	const path = notePath(ref, title);
 
-	const fm = [
-		`title: ${yamlString(title)}`,
-		`tipo: nota-jw-library`,
-		`referencia: ${yamlString(ref.display)}`,
-		`origem: ${yamlString(ref.source || ref.keySymbol || 'JW Library')}`,
-		`jw_guid: ${yamlString(note.Guid)}`,
-		`jw_note_id: ${note.NoteId}`,
-		`jw_source_created: ${yamlString(isoDate(note.Created))}`,
-		`jw_source_modified: ${yamlString(isoDate(note.LastModified))}`,
-		`jw_exported_at: ${yamlString(exportedAt)}`,
-		`jw_content_hash: ${yamlString(contentHash(importedContent))}`,
-		`sync_strategy: controlled-block`,
-		`tags: ${yamlList(['jw-library', ...mappedTags])}`
-	];
-
+	let fm: string[];
+	let body: string;
 	if (ref.kind === 'bible') {
-		fm.push(`livro: ${yamlString(bibleBookName(ref.bookNumber) || '')}`);
-		fm.push(`capitulo: ${ref.chapter ?? ''}`);
-		if (ref.verseRangeText) fm.push(`versiculos: ${yamlString(ref.verseRangeText)}`);
+		fm = buildBibleFrontmatter(note, ref, rawTags, colorName);
+		body = bibleBody(note, ref, title, rawTags);
+	} else if (ref.kind === 'publication') {
+		fm = buildPublicationFrontmatter(note, ref, rawTags, colorName);
+		body = publicationBody(note, ref, title, rawTags);
+	} else {
+		fm = buildUnknownFrontmatter(note, ref, rawTags);
+		body = unknownBody(note, title);
 	}
 
-	if (ref.kind === 'publication') {
-		fm.push(`publicacao: ${yamlString(ref.keySymbol)}`);
-		if (ref.year) fm.push(`ano: ${ref.year}`);
-		if (ref.month) fm.push(`mes: ${ref.month}`);
-		if (ref.documentId) fm.push(`documento: ${ref.documentId}`);
-		if (ref.paragraphRangeText) fm.push(`paragrafos: ${yamlString(ref.paragraphRangeText)}`);
-	}
-
-	if (colorName) fm.push(`marcacao: ${yamlString(colorName)}`);
-
-	const controlledLines = [`> ${ref.display}`];
-	if (ref.source && ref.source !== 'Bíblia') controlledLines[0] += ` - ${ref.source}`;
-
-	if (ref.kind === 'bible' && ref.verses?.length) {
-		controlledLines.push('');
-		controlledLines.push(ref.verses.map((verse) => `[[${bibleBookName(ref.bookNumber)} ${ref.chapter}.${verse}]]`).join(' '));
-	}
-
-	if (importedContent) {
-		controlledLines.push('');
-		controlledLines.push(importedContent);
-	}
-
-	const body: string[] = [
-		frontmatter(fm),
-		`# ${title}`,
-		'',
-		...controlledBlock(controlledLines),
-		'',
-		'## Anotações no Obsidian',
-		''
-	];
-
-	if (tags.length) {
-		body.push('## Etiquetas');
-		body.push('');
-		for (const tag of tags) body.push(`- [[JW Library/MOCs/${safeFilename(tag)}|${tag}]]`);
-		body.push('');
-	}
-
-	return { path, content: body.join('\n'), ref, tags, title, note };
+	const content = `${frontmatter(fm)}${body}`;
+	return { path, content, ref, tags: rawTags, title, note };
 }
 
 function createVerseFiles(noteFiles: ObsidianNoteFile[]): Record<string, string> {
 	const files: Record<string, string> = {};
-	const backlinks = new Map<string, { ref: NoteRef; verse: number; notes: ObsidianNoteFile[] }>();
+	const backlinks = new Map<
+		string,
+		{ ref: NoteRef; verse: number; notes: ObsidianNoteFile[] }
+	>();
 
 	for (const file of noteFiles) {
 		if (file.ref.kind !== 'bible' || !file.ref.verses?.length) continue;
 		for (const verse of file.ref.verses) {
-			const path = versePath(file.ref, verse);
+			const path = atomicVersePath(file.ref, verse);
 			const current = backlinks.get(path) ?? { ref: file.ref, verse, notes: [] };
 			current.notes.push(file);
 			backlinks.set(path, current);
@@ -207,19 +229,31 @@ function createVerseFiles(noteFiles: ObsidianNoteFile[]): Record<string, string>
 
 	for (const [path, item] of backlinks) {
 		const book = bibleBookName(item.ref.bookNumber) || 'Livro desconhecido';
-		const title = `${book} ${item.ref.chapter}:${item.verse}`;
-		const fm = frontmatter([
-			`title: ${yamlString(title)}`,
-			`tipo: versiculo-biblico`,
-			`jw_exported_at: ${yamlString(new Date().toISOString())}`,
-			`livro: ${yamlString(book)}`,
-			`capitulo: ${item.ref.chapter ?? ''}`,
-			`versiculo: ${item.verse}`,
-			`tags: [biblia, jw-library]`
-		]);
-		const lines = [fm, `# ${title}`, '', '## Notas relacionadas', ''];
+		const heading = `${book} ${item.ref.chapter}:${item.verse}`;
+		const test = testamento(item.ref.bookNumber);
+		const fm: string[] = ['tipo: atomic-verse', 'fonte: tnm'];
+		if (book) fm.push(`livro: ${yamlString(book)}`);
+		if (item.ref.chapter != null) fm.push(`capitulo: ${item.ref.chapter}`);
+		fm.push(`versiculo: ${item.verse}`);
+		if (test) fm.push(`testamento: ${test}`);
+		fm.push('status: faltante-tnm');
+		fm.push(`tags: ${yamlList(atomicVerseTags(item.ref))}`);
+
+		const lines: string[] = [
+			frontmatter(fm),
+			`# ${heading}`,
+			'',
+			'## Texto (TNM)',
+			'',
+			'*Aguardando preenchimento — `status: faltante-tnm`.*',
+			'',
+			'## Notas relacionadas',
+			''
+		];
 		for (const note of item.notes) {
-			lines.push(`- [[${note.path.replace(/\.md$/, '')}|${note.title}]]`);
+			const target = note.path.replace(/\.md$/, '');
+			const titleLabel = note.title || refHeader(note.ref);
+			lines.push(`- [[${target}|${titleLabel}]]`);
 		}
 		files[path] = lines.join('\n');
 	}
@@ -239,16 +273,19 @@ function createTagMocs(noteFiles: ObsidianNoteFile[]): Record<string, string> {
 
 	const files: Record<string, string> = {};
 	for (const [tag, notes] of byTag) {
-		const path = `JW Library/MOCs/${safeFilename(tag)}.md`;
+		const path = mocPath(tag);
 		const fm = frontmatter([
-			`title: ${yamlString(tag)}`,
-			`tipo: moc-etiqueta-jw-library`,
-			`tag_origem: ${yamlString(tag)}`,
-			`tags: ${yamlList(['jw-library', personalTag(tag)])}`
+			'tipo: moc',
+			`tag-jw: ${yamlString(tag)}`,
+			`tags: ${yamlList(mocTags(tag))}`
 		]);
-		const lines = [fm, `# ${tag}`, '', `Total de notas: ${notes.length}`, ''];
+		const lines: string[] = [fm, `# ${tag}`, '', `Total de notas: ${notes.length}`, ''];
 		for (const note of notes) {
-			lines.push(`- [[${note.path.replace(/\.md$/, '')}|${note.ref.display} - ${note.title}]]`);
+			const target = note.path.replace(/\.md$/, '');
+			const display = note.title
+				? `${refHeader(note.ref)} — ${note.title}`
+				: refHeader(note.ref);
+			lines.push(`- [[${target}|${display}]]`);
 		}
 		files[path] = lines.join('\n');
 	}
@@ -259,8 +296,8 @@ function createHome(noteFiles: ObsidianNoteFile[], verseCount: number, tagMocCou
 	const recent = [...noteFiles]
 		.sort((a, b) => (b.note.LastModified || '').localeCompare(a.note.LastModified || ''))
 		.slice(0, 12);
-	const lines = [
-		frontmatter(['title: Espiritual', 'tipo: home-espiritual', 'tags: [jw-library, home]']),
+	const lines: string[] = [
+		frontmatter(['tipo: home', 'tags: [tipo/home]']),
 		'# Espiritual',
 		'',
 		'## Resumo',
@@ -273,29 +310,19 @@ function createHome(noteFiles: ObsidianNoteFile[], verseCount: number, tagMocCou
 		''
 	];
 	for (const note of recent) {
-		lines.push(`- [[${note.path.replace(/\.md$/, '')}|${note.ref.display} - ${note.title}]]`);
+		const target = note.path.replace(/\.md$/, '');
+		const display = note.title
+			? `${refHeader(note.ref)} — ${note.title}`
+			: refHeader(note.ref);
+		lines.push(`- [[${target}|${display}]]`);
 	}
 	return lines.join('\n');
 }
 
-function createTemplates(): Record<string, string> {
-	return {
-		'Templates/JW Library - Nota pessoal.md': [
-			'---',
-			'title: "{{title}}"',
-			'tipo: nota-jw-library',
-			'tags: [jw-library]',
-			'---',
-			'',
-			'# {{title}}',
-			'',
-			'> {{referencia}}',
-			''
-		].join('\n')
-	};
-}
-
-export function buildObsidianVaultFiles(db: Database, notes: Note[] = listNotes(db, { limit: 100000 })): ObsidianVaultFiles {
+export function buildObsidianVaultFiles(
+	db: Database,
+	notes: Note[] = listNotes(db, { limit: 100000 })
+): ObsidianVaultFiles {
 	const noteFiles = notes.map((note) => noteToObsidianFile(db, note));
 	const textFiles: Record<string, string> = {};
 
@@ -312,10 +339,9 @@ export function buildObsidianVaultFiles(db: Database, notes: Note[] = listNotes(
 
 	Object.assign(textFiles, createVerseFiles(noteFiles));
 	Object.assign(textFiles, createTagMocs(noteFiles));
-	Object.assign(textFiles, createTemplates());
 
 	const verseNotes = Object.keys(textFiles).filter((path) => path.startsWith('Bíblia/')).length;
-	const tagMocs = Object.keys(textFiles).filter((path) => path.startsWith('JW Library/MOCs/')).length;
+	const tagMocs = Object.keys(textFiles).filter((path) => path.startsWith('_MOCs/')).length;
 	textFiles['Espiritual.md'] = createHome(noteFiles, verseNotes, tagMocs);
 
 	return {
@@ -330,7 +356,10 @@ export function buildObsidianVaultFiles(db: Database, notes: Note[] = listNotes(
 	};
 }
 
-export function exportObsidianVault(db: Database, notes: Note[] = listNotes(db, { limit: 100000 })): ObsidianExportResult {
+export function exportObsidianVault(
+	db: Database,
+	notes: Note[] = listNotes(db, { limit: 100000 })
+): ObsidianExportResult {
 	const vault = buildObsidianVaultFiles(db, notes);
 	const files: Record<string, Uint8Array> = {};
 	for (const [path, content] of Object.entries(vault.files)) files[path] = strToU8(content);

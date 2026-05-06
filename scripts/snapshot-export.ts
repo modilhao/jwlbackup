@@ -4,6 +4,7 @@
 //
 // Uso:
 //   bun run snapshot
+//   SNAPSHOT_OUT=claude/snapshots/0002-fase1-schema bun run snapshot
 //   (ou diretamente: bun scripts/snapshot-export.ts)
 //
 // Por que: serve de linha-de-partida pra detectar regressões nas Fases 1-5
@@ -22,16 +23,19 @@ import type { Note } from '../src/lib/types';
 
 const ROOT = resolve(import.meta.dir, '..');
 const DB_PATH = resolve(ROOT, 'claude/jwlibrary_extract/userData.db');
-const OUT_DIR = resolve(ROOT, 'claude/snapshots/0001-baseline');
+const OUT_DIR = resolve(
+	ROOT,
+	process.env.SNAPSHOT_OUT ?? 'claude/snapshots/0001-baseline'
+);
 const VAULT_DIR = resolve(OUT_DIR, 'vault-novo');
 const MD_DIR = resolve(OUT_DIR, 'markdown-antigo');
 
 /**
  * Encontra o path no vault gerado que corresponde a uma Note específica.
- * Robusto a mudanças de path/folder entre versões — busca pelo jw_note_id no frontmatter.
+ * Robusto a mudanças de path/folder entre versões — busca pelo note-id no frontmatter.
  */
 function findPathByNoteId(vault: ObsidianVaultFiles, noteId: number): string | undefined {
-	const re = new RegExp(`^jw_note_id:\\s*${noteId}\\b`, 'm');
+	const re = new RegExp(`^note-id:\\s*${noteId}\\b`, 'm');
 	for (const [path, content] of Object.entries(vault.files)) {
 		if (re.test(content)) return path;
 	}
@@ -104,7 +108,7 @@ async function main() {
 	const pubPath = findPathByNoteId(vault, firstPub.NoteId);
 	const firstVerse = sortedPaths.find((p) => p.startsWith('Bíblia/') && p.endsWith('.md'));
 	const firstMoc = sortedPaths.find(
-		(p) => p.startsWith('JW Library/MOCs/') && p.endsWith('.md')
+		(p) => p.startsWith('_MOCs/') && p.endsWith('.md')
 	);
 
 	if (biblePath) {

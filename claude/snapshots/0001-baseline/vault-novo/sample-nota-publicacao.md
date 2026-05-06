@@ -1,31 +1,31 @@
-<!-- snapshot path: JW Library/Notas/Publicações/2026/w.26.02 doc 2026282 par. 16 - declarar publicamente.md -->
+<!-- snapshot path: JW Library/Notas/Publicações/2026/w.26.02 doc 2026281 par. 31 - escreveu uma carta aos cristãos que contém muitas lições parecidas com as que Jesus ensino.md -->
 ---
-title: declarar publicamente
+title: "escreveu uma carta aos cristãos que contém muitas lições parecidas com as que Jesus ensinou no Sermão do Monte"
 tipo: nota-jw-library
-referencia: w.26.02 doc 2026282 par. 16
+referencia: w.26.02 doc 2026281 par. 31
 origem: A Sentinela (Estudo)
-jw_guid: B96E6016-42F9-4637-A581-729141D8B12C
-jw_note_id: 3317
-jw_source_created: 2026-04-19T11:32:40.000Z
-jw_source_modified: 2026-04-19T11:33:01.000Z
-jw_exported_at: 2026-05-06T11:48:40.244Z
-jw_content_hash: 6b98d5f0
+jw_guid: 125633B4-2977-44C7-8236-FE024FB1FD8A
+jw_note_id: 3306
+jw_source_created: 2026-04-11T19:59:00.000Z
+jw_source_modified: 2026-04-11T20:01:47.000Z
+jw_exported_at: 2026-05-06T17:27:31.933Z
+jw_content_hash: 6a9e6233
 sync_strategy: controlled-block
 tags: [jw-library]
 publicacao: w
 ano: 2026
 mes: 2
-documento: 2026282
-paragrafos: 16
+documento: 2026281
+paragrafos: 31
 marcacao: amarelo
 ---
 
-# declarar publicamente
+# escreveu uma carta aos cristãos que contém muitas lições parecidas com as que Jesus ensinou no Sermão do Monte
 
 <!-- JWL:BEGIN -->
-> w.26.02 doc 2026282 par. 16 - A Sentinela (Estudo)
+> w.26.02 doc 2026281 par. 31 - A Sentinela (Estudo)
 
-Eles continuam fazendo isso quando se reúnem com outros cristãos e quando declaram as boas novas de salvação para outras pessoas
+Tiago pode não ter seguido Jesus em seu ministério. Mas ele viveu o sermão do monte. Ele teve a sua vida transformada pelas palavras de Jesus Cristo, tanto que isso o ensinou pontos práticos que escreveu em seu livro, sobre manter a alegria na perseguição, saber controlar as palavras, ter fé e obras e praticar a misericórdia perdão. Isso nos mostra que assim como Jesus Cristo, não devemos desistir.Tiago precisou de tempo, o seu tempo e o de Jeová.
 <!-- JWL:END -->
 
 ## Anotações no Obsidian
